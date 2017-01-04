@@ -25,7 +25,7 @@ if (@$_REQUEST['customerid']) {
         set datafile separator ","
         set terminal svg size 800,500
         set title font ",18"
-        set title "Customer CID Export Progress"
+        set title "Customer $cid Export Progress"
         set xdata time
         set timefmt "%Y-%m-%d %H:%M:%S"
         set format x "%m/%d"
