@@ -54,10 +54,10 @@ EOT;
         fpassthru($f);
     }
 
-    unlink($plotfile);
-    unlink($csvfile);
-    unlink($output);
-    unlink($errlog);
+    @unlink($plotfile);
+    @unlink($csvfile);
+    @unlink($output);
+    @unlink($errlog);
 
     return;
 }
