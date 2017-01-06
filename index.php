@@ -118,7 +118,7 @@ EOT;
             }
         ?>
         </ul>
-        <p class="help-block">** indicates a multi-worker customer.</p>
+        <p class="help-block">** indicates a known multi-worker customer.</p>
     </div>
 </div>
 </div>
