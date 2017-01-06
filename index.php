@@ -33,8 +33,8 @@ if (@$_REQUEST['customerid']) {
         set title "Customer $cid Export Progress"
         set xdata time
         set timefmt "%Y-%m-%d %H:%M:%S"
-        #set format x "%m/%d"
-        set format y '%.0f'
+        set format x "%m/%d"
+        set format y '%.0f%%'
         set key off
         set grid
         plot "$csvfile" using 1:2 with $type lw 2 lt 2
