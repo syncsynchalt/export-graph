@@ -42,13 +42,17 @@ EOT;
     fwrite($pf, $plotcmds);
     fclose($pf);
 
-    system("gnuplot < $plotfile > $output 2>> $errlog");
+    if (filesize($csvfile) === 0) {
+        echo "Customer $cid not found\n";
+    } else {
+        system("gnuplot < $plotfile > $output 2>> $errlog");
 
-    header("Content-Type: image/svg+xml");
-    $filename = "$cid-" . strftime("%Y%m%d%H%M%S") . ".svg";
-    header("Content-Disposition: inline; filename=\"$filename\"");
-    $f = fopen($output, "r");
-    fpassthru($f);
+        header("Content-Type: image/svg+xml");
+        $filename = "$cid-" . strftime("%Y%m%d%H%M%S") . ".svg";
+        header("Content-Disposition: inline; filename=\"$filename\"");
+        $f = fopen($output, "r");
+        fpassthru($f);
+    }
 
     unlink($plotfile);
     unlink($csvfile);
@@ -76,11 +80,11 @@ EOT;
         <form style="padding: 10" method="GET" action="<?= $selfurl; ?>">
             <div id="group-cid" class="form-group">
                 <label for="input-cid">Customer ID</label>
-                <input id="input-cid" name="customerid" class="form-control" pattern="\d*"
+                <input id="input-cid" name="customerid" class="form-control" required pattern="\d+"
                     onkeyup="
-                        var g = document.getElementById('group-cid');
-                        if (this.checkValidity && g.classList) {
-                            this.checkValidity() ? g.classList.remove('has-error') : g.classList.add('has-error');
+                        var cl = document.getElementById('group-cid').classList;
+                        if (this.checkValidity && cl) {
+                            this.checkValidity() ? cl.remove('has-error') : cl.add('has-error');
                         }
                     ">
             </div>
