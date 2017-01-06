@@ -74,9 +74,15 @@ EOT;
     <h2>Graph a customer's export progress</h2>
     <div class="col-sm-offset-1 col-sm-8">
         <form style="padding: 10" method="GET" action="<?= $selfurl; ?>">
-            <div class="form-group">
+            <div id="group-cid" class="form-group">
                 <label for="input-cid">Customer ID</label>
-                <input id="input-cid" name="customerid" class="form-control">
+                <input id="input-cid" name="customerid" class="form-control" pattern="\d*"
+                    onkeyup="
+                        var g = document.getElementById('group-cid');
+                        if (this.checkValidity && g.classList) {
+                            this.checkValidity() ? g.classList.remove('has-error') : g.classList.add('has-error');
+                        }
+                    ">
             </div>
             <div class="checkbox">
                 <label>
