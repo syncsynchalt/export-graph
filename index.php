@@ -1,4 +1,9 @@
 <?php
+
+$selfurl = filter_input(INPUT_SERVER, 'PHP_SELF', FILTER_SANITIZE_URL);
+$known_multis = array(63944674, 37675790, 2001715704, 2095470576, 25743292,
+        60240330, 64232826, 2138023554, 25380546, 2075789940, 1062714379, );
+
 if (@$_REQUEST['customerid']) {
 
     $cid = (int)$_REQUEST['customerid'];
@@ -54,28 +59,58 @@ EOT;
 }
 
 ?>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<link rel="stylesheet"
+    href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+    crossorigin="anonymous">
 </head>
+<title>Export Progress Grapher</title>
 <body>
-<div class="container" style="max-width: 600px">
-<h2>Graph a customer's export progress</h2>
-<form style="padding: 10" method="GET" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF', FILTER_SANITIZE_URL); ?>">
-    <div class="form-group">
-        <label for="input-cid">Customer ID</label>
-        <input id="input-cid" name="customerid" class="form-control">
+<div class="container" style="max-width: 6000px">
+<div class="row">
+    <h2>Graph a customer's export progress</h2>
+    <div class="col-sm-offset-1 col-sm-8">
+        <form style="padding: 10" method="GET" action="<?= $selfurl; ?>">
+            <div class="form-group">
+                <label for="input-cid">Customer ID</label>
+                <input id="input-cid" name="customerid" class="form-control">
+            </div>
+            <div class="checkbox">
+                <label>
+                    <input id="input-multi" type="checkbox" name="multi">
+                    multi-worker (try this if the graph is a mess of lines)
+                </label>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-default">Submit</button>
+            </div>
+        </form>
     </div>
-    <div class="checkbox">
-        <label>
-            <input id="input-multi" type="checkbox" name="multi">
-            multi-worker (try this if the graph is a mess of lines)
-        </label>
+</div>
+<div class="row">
+    <h3>List of active customer ids</h3>
+    <div class="col-sm-offset-1 col-sm-8">
+        <ul class="list-unstyled">
+        <?php
+            $perl = '$p=1 if /Workers ordered by percent done/; $p=0 if /rows\)/; print if $p && /M[SD]T/';
+            $f = popen('cat $(ls ~mdriscoll/spurge/arc_report_* | tail -n 1) | '
+                . ' perl -ne \''.$perl.'\' | '
+                . ' awk \'{print $1}\' | sort -n | uniq', "r");
+
+            while ($l = rtrim(fgets($f))) {
+                $extra = (in_array($l, $known_multis) ? '&multi=1' : '');
+                echo "<li><a href=\"$selfurl?customerid=$l$extra\">$l</a>";
+                if ($extra) { echo ' <sup>**</sup>'; }
+                echo "</li>\n";
+            }
+        ?>
+        </ul>
+        <p class="help-block">** indicates a multi-worker customer.</p>
     </div>
-    <div class="form-group">
-        <button type="submit" class="btn btn-default">Submit</button>
-    </div>
-</form>
+</div>
 </div>
 </body>
 </html>
