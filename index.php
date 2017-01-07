@@ -2,7 +2,8 @@
 
 $selfurl = filter_input(INPUT_SERVER, 'PHP_SELF', FILTER_SANITIZE_URL);
 $known_multis = array(63944674, 37675790, 2001715704, 2095470576, 25743292,
-        60240330, 64232826, 2138023554, 25380546, 2075789940, 1062714379, );
+        60240330, 64232826, 2138023554, 25380546, 2075789940, 1062714379,
+        26297571, );
 
 if (@$_REQUEST['customerid']) {
 
@@ -103,12 +104,13 @@ EOT;
 <div class="row">
     <h3>List of active customer ids</h3>
     <div class="col-sm-offset-1 col-sm-8">
+        <p>Sorted by longest-running first.</p>
         <ul class="list-unstyled">
         <?php
-            $perl = '$p=1 if /Workers ordered by percent done/; $p=0 if /rows\)/; print if $p && /M[SD]T/';
+            $perl = '$p=1 if /Workers ordered by start date/; $p=0 if /rows\)/; print if $p && /M[SD]T/';
             $f = popen('cat $(ls ~mdriscoll/spurge/arc_report_* | tail -n 1) | '
                 . ' perl -ne \''.$perl.'\' | '
-                . ' awk \'{print $1}\' | sort -n | uniq', "r");
+                . ' awk \'{print $1}\' | awk \'!x[$0]++\'', "r");
 
             while ($l = rtrim(fgets($f))) {
                 $extra = (in_array($l, $known_multis) ? '&multi=1' : '');
