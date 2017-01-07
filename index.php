@@ -1,30 +1,29 @@
 <?php
 
 $selfurl = filter_input(INPUT_SERVER, 'PHP_SELF', FILTER_SANITIZE_URL);
-$known_multis = array(63944674, 37675790, 2001715704, 2095470576, 25743292,
-        60240330, 64232826, 2138023554, 25380546, 2075789940, 1062714379,
-        26297571, );
 
 if (@$_REQUEST['customerid']) {
 
     $cid = (int)$_REQUEST['customerid'];
-    $multi = @$_REQUEST['multi'];
-    if ($multi) {
-        $type = 'points ps 0.2';
-    } else {
-        $type = 'lines';
-    }
 
     $plotfile = "/tmp/exp-gnuplot-".getmypid().".gnuplot";
     $csvfile = "/tmp/exp-input-data.".getmypid().".csv";
     $output = "/tmp/exp-output-".getmypid().".svg";
     $errlog = "/tmp/exp-errlog-".getmypid().".txt";
 
-    $match='.*_(\\d{4})(\\d\\d)(\\d\\d)-(\\d\\d)(\\d\\d):.*'.$cid.'[^\\d]+([0-9.]+).*';
+    $match='.*_(\\d{4})(\\d\\d)(\\d\\d)-(\\d\\d)(\\d\\d)-.*'.$cid.'[^\\d]+([0-9.]+).*';
     $repl='$1-$2-$3 $4:$5:00,$6';
-    system("egrep -r '^  *$cid.*(MST|MDT)' ~mdriscoll/spurge/ | egrep -v 'done|requested|stalled|active' "
+    system("egrep -B 1000 'Workers ordered by start date' -r ~mdriscoll/spurge "
+        . " | egrep '$cid.*(MST|MDT)' "
         . " | grep -v '.*|.*|.*|.*|' "
-        . " | perl -ne 's/$match/$repl/ and print' | sort > $csvfile 2>> $errlog");
+        . " | perl -ne 's/$match/$repl/ and print' | sort | uniq > $csvfile 2>> $errlog");
+
+    $multi_check = `cat $csvfile | cut -f1 -d, | sort | uniq -c | sort -nr | head -n1 | awk '{print \$1}'`;
+    if ($multi_check > 1) {
+        $graphtype = 'dots';
+    } else {
+        $graphtype = 'lines';
+    }
 
     $pf = fopen($plotfile, "w");
     $plotcmds = <<<EOT
@@ -38,7 +37,7 @@ if (@$_REQUEST['customerid']) {
         set format y '%.0f%%'
         set key off
         set grid
-        plot "$csvfile" using 1:2 with $type lw 2 lt 2
+        plot "$csvfile" using 1:2 with $graphtype lw 2 lt 2
 EOT;
     fwrite($pf, $plotcmds);
     fclose($pf);
@@ -89,12 +88,6 @@ EOT;
                         }
                     ">
             </div>
-            <div class="checkbox">
-                <label>
-                    <input id="input-multi" type="checkbox" name="multi">
-                    multi-worker (try this if the graph is a mess of lines)
-                </label>
-            </div>
             <div class="form-group">
                 <button type="submit" class="btn btn-default">Submit</button>
             </div>
@@ -113,14 +106,10 @@ EOT;
                 . ' awk \'{print $1}\' | awk \'!x[$0]++\'', "r");
 
             while ($l = rtrim(fgets($f))) {
-                $extra = (in_array($l, $known_multis) ? '&multi=1' : '');
-                echo "<li><a href=\"$selfurl?customerid=$l$extra\">$l</a>";
-                if ($extra) { echo ' <sup>**</sup>'; }
-                echo "</li>\n";
+                echo "<li><a href=\"$selfurl?customerid=$l$extra\">$l</a></li>\n";
             }
         ?>
         </ul>
-        <p class="help-block">** indicates a known multi-worker customer.</p>
     </div>
 </div>
 </div>
