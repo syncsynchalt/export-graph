@@ -106,7 +106,7 @@ EOT;
                 . ' awk \'{print $1}\' | awk \'!x[$0]++\'', "r");
 
             while ($l = rtrim(fgets($f))) {
-                echo "<li><a href=\"$selfurl?customerid=$l$extra\">$l</a></li>\n";
+                echo "<li><a href=\"$selfurl?customerid=$l\">$l</a></li>\n";
             }
         ?>
         </ul>
