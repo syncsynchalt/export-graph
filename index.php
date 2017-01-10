@@ -70,14 +70,22 @@ EOT;
     href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
     integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
     crossorigin="anonymous">
+<meta name="viewport" content="width=device-width, initial-scale=1,
+                               maximum-scale=1, user-scalable=no">
+<meta name="format-detection" content="telephone=no">
+<style>
+.inset {
+    padding-left: 3em;
+}
+</style>
 </head>
 <title>Export Progress Grapher</title>
 <body>
-<div class="container" style="max-width: 6000px">
-<div class="row">
+<div class="container-fluid">
+<div class="group">
     <h2>Graph a customer's export progress</h2>
-    <div class="col-sm-offset-1 col-sm-8">
-        <form style="padding: 10" method="GET" action="<?= $selfurl; ?>">
+    <div class="inset">
+        <form method="GET" action="<?= $selfurl; ?>" style="max-width: 300px">
             <div id="group-cid" class="form-group">
                 <label for="input-cid">Customer ID</label>
                 <input id="input-cid" name="customerid" class="form-control" required pattern="\d+"
@@ -94,9 +102,9 @@ EOT;
         </form>
     </div>
 </div>
-<div class="row">
+<div class="group">
     <h3>List of active customer ids</h3>
-    <div class="col-sm-offset-1 col-sm-8">
+    <div class="inset">
         <p>Sorted by longest-running first.</p>
         <ul class="list-unstyled">
         <?php
