@@ -120,6 +120,12 @@ EOT;
         </ul>
     </div>
 </div>
+<div class="group">
+    <div class="inset">
+    <br>
+    <p>last updated <?= `ls ~mdriscoll/spurge/arc* | tail -n 1 | sed -e 's/.*arc_report_//' `; ?></p>
+    </div>
+</div>
 </div>
 </body>
 </html>
