@@ -103,7 +103,7 @@ EOT;
     </div>
 </div>
 <div class="group">
-    <h3>List of active customer ids</h3>
+    <h3>List of active US customer ids</h3>
     <div class="inset">
         <p>Sorted by longest-running first.</p>
         <ul class="list-unstyled">
