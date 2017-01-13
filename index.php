@@ -17,12 +17,20 @@ if (@$_REQUEST['customerid']) {
         . " | egrep '$cid.*(MST|MDT)' "
         . " | grep -v '.*|.*|.*|.*|' "
         . " | perl -ne 's/$match/$repl/ and print' | sort | uniq > $csvfile 2>> $errlog");
+    $min=chop(`date -d "\$(cat $csvfile | cut -f1 -d, | sort -n  | head -n 1)" +%s`);
+    $max=chop(`date -d "\$(cat $csvfile | cut -f1 -d, | sort -nr | head -n 1)" +%s`);
 
     $multi_check = `cat $csvfile | cut -f1 -d, | sort | uniq -c | sort -nr | head -n1 | awk '{print \$1}'`;
     if ($multi_check > 1) {
         $graphtype = 'dots';
     } else {
         $graphtype = 'lines';
+    }
+
+    $extra = '';
+    if (($max - $min) < 10*24*60*60) {
+        $extra =  "x1=($min-946684800)-($min%86400)\n";
+        $extra .= "set xtics x1,86400\n";
     }
 
     $pf = fopen($plotfile, "w");
@@ -35,6 +43,7 @@ if (@$_REQUEST['customerid']) {
         set timefmt "%Y-%m-%d %H:%M:%S"
         set format x "%m/%d"
         set format y '%.0f%%'
+        $extra
         set key off
         set grid
         plot "$csvfile" using 1:2 with $graphtype lw 2 lt 2
