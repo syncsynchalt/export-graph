@@ -29,7 +29,8 @@ if (@$_REQUEST['customerid']) {
 
     $extra = '';
     if (($max - $min) < 10*24*60*60) {
-        $extra =  "x1=($min-946684800)-($min%86400)\n";
+        $extra = "epoch_offset=946684800\n";
+        $extra .= "x1=($min-epoch_offset)-($min%86400)\n";
         $extra .= "set xtics x1,86400\n";
     }
 
