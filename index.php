@@ -37,7 +37,7 @@ if (@$_REQUEST['customerid']) {
     $pf = fopen($plotfile, "w");
     $plotcmds = <<<EOT
         set datafile separator ","
-        set terminal svg size 800,500
+        set terminal svg size 980,640
         set title font ",18"
         set title "Customer $cid Export Progress"
         set xdata time
