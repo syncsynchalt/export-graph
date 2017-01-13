@@ -85,7 +85,7 @@ EOT;
 <div class="group">
     <h2>Graph a customer's export progress</h2>
     <div class="inset">
-        <form method="GET" action="<?= $selfurl; ?>" style="max-width: 300px">
+        <form method="GET" action="<?= $selfurl; ?>" style="max-width: 250px">
             <div id="group-cid" class="form-group">
                 <label for="input-cid">Customer ID</label>
                 <input id="input-cid" name="customerid" class="form-control" required pattern="\d+"
@@ -103,10 +103,12 @@ EOT;
     </div>
 </div>
 <div class="group">
-    <h3>List of active US customer ids</h3>
+    <h3>List of active customer ids</h3>
     <div class="inset">
         <p>Sorted by longest-running first.</p>
-        <ul class="list-unstyled">
+
+        <h4>US customers <small>(<span id="us-count"></span>)</small></h4>
+        <ul id="us-list" class="list-unstyled">
         <?php
             $perl = '$p=1 if /Workers ordered by start date/; $p=0 if /rows\)/; print if $p && /M[SD]T/';
             $f = popen('cat $(ls ~mdriscoll/spurge/arc_report_* | tail -n 1) | '
@@ -118,6 +120,29 @@ EOT;
             }
         ?>
         </ul>
+        <script>
+            document.getElementById('us-count').innerHTML = document.querySelectorAll('#us-list li').length;
+        </script>
+
+        <h4>International customers <small>(<span id="intl-count"></span>)</small></h4>
+        <ul id="intl-list" class="list-unstyled">
+        <?php
+            $perl = '$p=1 if /Workers ordered by start date/;
+                     $p=2 if ($p && /internationals .if any/);
+                     $p=0 if ($p==2 && /^[^ ]/);
+                     print if ($p==2 && /M[SD]T/)';
+            $f = popen('cat $(ls ~mdriscoll/spurge/arc_report_* | tail -n 1) | '
+                . ' perl -ne \''.$perl.'\' | '
+                . ' awk \'{print $1}\' | awk \'!x[$0]++\'', "r");
+
+            while ($l = rtrim(fgets($f))) {
+                echo "<li><a href=\"$selfurl?customerid=$l\">$l</a></li>\n";
+            }
+        ?>
+        </ul>
+        <script>
+            document.getElementById('intl-count').innerHTML = document.querySelectorAll('#intl-list li').length;
+        </script>
     </div>
 </div>
 <div class="group">
