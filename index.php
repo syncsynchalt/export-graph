@@ -44,6 +44,7 @@ if (@$_REQUEST['customerid']) {
         set format x "%m/%d"
         set format y '%.0f%%'
         $extra
+        set yrange [0:]
         set key off
         set grid
         plot "$csvfile" using 1:2 with $graphtype lw 2 lt 2
