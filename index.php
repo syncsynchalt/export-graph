@@ -37,7 +37,7 @@ if (@$_REQUEST['customerid']) {
     $pf = fopen($plotfile, "w");
     $plotcmds = <<<EOT
         set datafile separator ","
-        set terminal svg size 980,640
+        set terminal svg size 800,600
         set title font ",18"
         set title "Customer $cid Export Progress"
         set xdata time
@@ -53,14 +53,19 @@ EOT;
     fwrite($pf, $plotcmds);
     fclose($pf);
 
+    header("Content-Type: text/html");
     if (filesize($csvfile) === 0) {
         echo "Customer $cid not found\n";
     } else {
+        ?>
+            <html>
+            <head>
+            <meta name="viewport" content="width=800">
+            <title>Customer <?=$cid?> Export Progress</title>
+            </head>
+            <body>
+        <?php
         system("gnuplot < $plotfile > $output 2>> $errlog");
-
-        header("Content-Type: image/svg+xml");
-        $filename = "$cid-" . strftime("%Y%m%d%H%M%S") . ".svg";
-        header("Content-Disposition: inline; filename=\"$filename\"");
         $f = fopen($output, "r");
         fpassthru($f);
     }
