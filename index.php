@@ -19,6 +19,7 @@ if (@$_REQUEST['customerid']) {
         . " | perl -ne 's/$match/$repl/ and print' | sort | uniq > $csvfile 2>> $errlog");
     $min=chop(`date -d "\$(cat $csvfile | cut -f1 -d, | sort -n  | head -n 1)" +%s`);
     $max=chop(`date -d "\$(cat $csvfile | cut -f1 -d, | sort -nr | head -n 1)" +%s`);
+    $maxval=chop(`cat $csvfile | tail -n1 | cut -f2 -d,`);
 
     $multi_check = `cat $csvfile | cut -f1 -d, | sort | uniq -c | sort -nr | head -n1 | awk '{print \$1}'`;
     if ($multi_check > 1) {
@@ -34,6 +35,11 @@ if (@$_REQUEST['customerid']) {
         $extra .= "set xtics x1,86400\n";
     }
 
+    $fmt = '%.0f%%';
+    if ($maxval < 10) {
+        $fmt = '%.1f%%';
+    }
+
     $pf = fopen($plotfile, "w");
     $plotcmds = <<<EOT
         set datafile separator ","
@@ -43,7 +49,7 @@ if (@$_REQUEST['customerid']) {
         set xdata time
         set timefmt "%Y-%m-%d %H:%M:%S"
         set format x "%m/%d"
-        set format y '%.0f%%'
+        set format y '$fmt'
         $extra
         set yrange [0:]
         set key off
