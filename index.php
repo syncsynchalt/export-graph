@@ -12,13 +12,21 @@ if (@$_REQUEST['customerid']) {
     $errlog = "/tmp/exp-errlog-".getmypid().".txt";
 
     $match='.*_(\\d{4})(\\d\\d)(\\d\\d)-(\\d\\d)(\\d\\d)-.*'.$cid.'[^\\d]+([0-9.]+).*';
-    $repl='$1-$2-$3 $4:$5:00,$6';
+    $repl='$1$2$3$4$5,$6';
     system("egrep -B 1000 'Workers ordered by start date' -r ~mdriscoll/spurge "
+        // these look like customer percentages
         . " | egrep '$cid.*(MST|MDT)' "
         . " | grep -v '.*|.*|.*|.*|' "
-        . " | perl -ne 's/$match/$repl/ and print' | sort | uniq > $csvfile 2>> $errlog");
-    $min=chop(`date -d "\$(cat $csvfile | cut -f1 -d, | sort -n  | head -n 1)" +%s`);
-    $max=chop(`date -d "\$(cat $csvfile | cut -f1 -d, | sort -nr | head -n 1)" +%s`);
+        // trim down to our CSV
+        . " | perl -ne 's/$match/$repl/ and print' "
+        // convert times to epoch
+        . " | perl -MTime::Local -pe 's/^(\d{4})(\d\d)(\d\d)(\d\d)(\d\d)/timelocal(0,\$5,\$4,\$3,\$2-1,$1)/e' "
+        // put an "x" to break up large gaps
+        . " | sort | uniq "
+        . " | perl -pE '(\$n)=(m/(.*),/); if (\$d && \$n > \$d+43200) {say \$d-43200,\",x\"} \$d=\$n' "
+        . " > $csvfile 2>> $errlog");
+    $min=chop(`cat $csvfile | cut -f1 -d, | sort -n  | head -n 1`);
+    $max=chop(`cat $csvfile | cut -f1 -d, | sort -nr | head -n 1`);
     $maxval=chop(`cat $csvfile | tail -n1 | cut -f2 -d,`);
 
     $multi_check = `cat $csvfile | cut -f1 -d, | sort | uniq -c | sort -nr | head -n1 | awk '{print \$1}'`;
@@ -47,14 +55,15 @@ if (@$_REQUEST['customerid']) {
         set title font ",18"
         set title "Customer $cid Export Progress"
         set xdata time
-        set timefmt "%Y-%m-%d %H:%M:%S"
+        set timefmt "%s"
         set format x "%m/%d"
         set format y '$fmt'
+        set datafile missing 'x'
         $extra
         set yrange [0:]
         set key off
         set grid
-        plot "$csvfile" using 1:2 with $graphtype lw 2 lt 2
+        plot "$csvfile" using 1:(\$2) with $graphtype lw 2 lt 2
 EOT;
     fwrite($pf, $plotcmds);
     fclose($pf);
