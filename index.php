@@ -200,10 +200,10 @@ EOT;
             document.getElementById('intl-count').innerHTML = document.querySelectorAll('#intl-list li').length;
         </script>
         <script>
-            Array.prototype.forEach.call(document.querySelectorAll('.multi'), function (el) {
+            [].forEach.call(document.querySelectorAll('.multi'), function (el) {
                 el.setAttribute('title', 'multiple workers were detected');
             });
-            Array.prototype.forEach.call(document.querySelectorAll('.fragile'), function (el) {
+            [].forEach.call(document.querySelectorAll('.fragile'), function (el) {
                 el.setAttribute('title', 'running >7 days with no downloads');
             });
         </script>
