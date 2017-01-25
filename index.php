@@ -109,6 +109,9 @@ EOT;
 .inset {
     padding-left: 3em;
 }
+.helptip {
+    cursor: default;
+}
 </style>
 </head>
 <title>Export Progress Grapher</title>
@@ -142,14 +145,26 @@ EOT;
         <h4>US customers <small>(<span id="us-count"></span>)</small></h4>
         <ul id="us-list" class="list-unstyled">
         <?php
-            $perl = '$p=1 if /Workers ordered by start date/; $p=0 if /rows\)/; print if $p && /M[SD]T/';
-            $f = popen('cat $(ls ~mdriscoll/spurge/arc_report_* | tail -n 1) | '
-                . ' perl -ne \''.$perl.'\' | '
-                . ' awk \'{print $1}\' | awk \'!x[$0]++\'', "r");
+            $fragilefile = "/tmp/exp-fragiles-".getmypid().".txt";
+            system('cat $(ls ~mdriscoll/spurge/arc_report_* | tail -n 1) | '
+                . ' sed -ne \'/Fragile.customers/,/^$/ p\' > '.$fragilefile);
+
+            $tmpfile = "/tmp/exp-tmpfile-".getmypid().".txt";
+            system('cat $(ls ~mdriscoll/spurge/arc_report_* | tail -n 1) | '
+                . ' sed -ne \'/Workers ordered by start date/,/rows)/ p\' | '
+                . ' grep M[SD]T | awk \'{print $1}\' > ' . $tmpfile);
+
+            $f = popen("cat $tmpfile | awk '!x[\$0]++'", "r");
 
             while ($l = rtrim(fgets($f))) {
-                echo "<li><a href=\"$selfurl?customerid=$l\">$l</a></li>\n";
+                echo "<li><a href=\"$selfurl?customerid=$l\">$l</a>";
+                if (`grep $l $fragilefile` != '')
+                    echo " <sup class='helptip fragile'>fragile</sup> ";
+                if ((int)`grep -c $l $tmpfile` > 1)
+                    echo " <sup class='helptip multi'>multi</sup> ";
+                echo "</li>\n";
             }
+            unlink($tmpfile);
         ?>
         </ul>
         <script>
@@ -159,21 +174,40 @@ EOT;
         <h4>International customers <small>(<span id="intl-count"></span>)</small></h4>
         <ul id="intl-list" class="list-unstyled">
         <?php
+            $tmpfile = "/tmp/exp-tmpfile2-".getmypid().".txt";
             $perl = '$p=1 if /Workers ordered by start date/;
                      $p=2 if ($p && /internationals .if any/);
                      $p=0 if ($p==2 && /^[^ ]/);
                      print if ($p==2 && /M[SD]T/)';
-            $f = popen('cat $(ls ~mdriscoll/spurge/arc_report_* | tail -n 1) | '
-                . ' perl -ne \''.$perl.'\' | '
-                . ' awk \'{print $1}\' | awk \'!x[$0]++\'', "r");
+            system('cat $(ls ~mdriscoll/spurge/arc_report_* | tail -n 1) | '
+                . ' perl -ne \''.$perl.'\' | awk \'{print $1}\''
+                . " > $tmpfile");
+            $f = popen("cat $tmpfile | awk '!x[\$0]++'", "r");
 
             while ($l = rtrim(fgets($f))) {
-                echo "<li><a href=\"$selfurl?customerid=$l\">$l</a></li>\n";
+                echo "<li><a href=\"$selfurl?customerid=$l\">$l</a>";
+                if (`grep $l $fragilefile` != '')
+                    echo " <sup class='helptip fragile'>fragile</sup> ";
+                if ((int)`grep -c $l $tmpfile` > 1)
+                    echo " <sup class='helptip multi'>multi</sup> ";
+                echo "</li>\n";
             }
+            unlink($tmpfile);
+            unlink($fragilefile);
         ?>
         </ul>
         <script>
             document.getElementById('intl-count').innerHTML = document.querySelectorAll('#intl-list li').length;
+        </script>
+        <script>
+            var i, els = document.getElementsByClassName('multi');
+            for (i = 0; i < els.length; i++) {
+                els[i].setAttribute('title', 'multiple workers were detected');
+            }
+            els = document.getElementsByClassName('fragile');
+            for (i = 0; i < els.length; i++) {
+                els[i].setAttribute('title', 'running >7 days with no downloads');
+            }
         </script>
     </div>
 </div>
