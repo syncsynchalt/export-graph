@@ -200,14 +200,12 @@ EOT;
             document.getElementById('intl-count').innerHTML = document.querySelectorAll('#intl-list li').length;
         </script>
         <script>
-            var i, els = document.getElementsByClassName('multi');
-            for (i = 0; i < els.length; i++) {
-                els[i].setAttribute('title', 'multiple workers were detected');
-            }
-            els = document.getElementsByClassName('fragile');
-            for (i = 0; i < els.length; i++) {
-                els[i].setAttribute('title', 'running >7 days with no downloads');
-            }
+            Array.prototype.forEach.call(document.querySelectorAll('.multi'), function (el) {
+                el.setAttribute('title', 'multiple workers were detected');
+            });
+            Array.prototype.forEach.call(document.querySelectorAll('.fragile'), function (el) {
+                el.setAttribute('title', 'running >7 days with no downloads');
+            });
         </script>
     </div>
 </div>
