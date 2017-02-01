@@ -25,8 +25,8 @@ if (@$_REQUEST['customerid']) {
         . " | sort | uniq "
         . " | perl -pE '(\$n)=(m/(.*),/); if (\$d && \$n > \$d+43200) {say \$d-43200,\",x\"} \$d=\$n' "
         . " > $csvfile 2>> $errlog");
-    $min=chop(`cat $csvfile | cut -f1 -d, | sort -n  | head -n 1`);
-    $max=chop(`cat $csvfile | cut -f1 -d, | sort -nr | head -n 1`);
+    $min=chop(`cat $csvfile | cut -f1 -d, | sort -n  2>/dev/null | head -n 1`);
+    $max=chop(`cat $csvfile | cut -f1 -d, | sort -nr 2>/dev/null | head -n 1`);
     $maxval=chop(`cat $csvfile | tail -n1 | cut -f2 -d,`);
 
     $multi_check = `cat $csvfile | cut -f1 -d, | sort | uniq -c | sort -nr | head -n1 | awk '{print \$1}'`;
@@ -201,7 +201,7 @@ EOT;
         </script>
         <script>
             [].forEach.call(document.querySelectorAll('.multi'), function (el) {
-                el.setAttribute('title', 'multiple workers were detected');
+                el.setAttribute('title', 'expedited customer detected');
             });
             [].forEach.call(document.querySelectorAll('.fragile'), function (el) {
                 el.setAttribute('title', 'running >7 days with no downloads');
