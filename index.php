@@ -16,7 +16,7 @@ if (@$_REQUEST['customerid']) {
     system("egrep -B 1000 'Workers ordered by start date' -r ~mdriscoll/spurge "
         // these look like customer percentages
         . " | egrep '$cid.*(MST|MDT)' "
-        . " | grep -v '.*|.*|.*|.*|' "
+        . " | perl -ne '/\\d+\.\\d{2}/ and print' "
         // trim down to our CSV
         . " | perl -ne 's/$match/$repl/ and print' "
         // convert times to epoch
@@ -151,16 +151,17 @@ EOT;
 
             $tmpfile = "/tmp/exp-tmpfile-".getmypid().".txt";
             system('cat $(ls ~mdriscoll/spurge/arc_report_* | tail -n 1) | '
-                . ' sed -ne \'/Workers ordered by start date/,/rows)/ p\' | '
-                . ' grep M[SD]T | awk \'{print $1}\' > ' . $tmpfile);
+                . ' sed -ne \'/All export requests/,/rows)/ p\' | '
+                . ' grep \' active \' | '
+                . ' grep M[SD]T > ' . $tmpfile);
 
-            $f = popen("cat $tmpfile | awk '!x[\$0]++'", "r");
+            $f = popen("cat $tmpfile | awk '{print \$1}'", "r");
 
             while ($l = rtrim(fgets($f))) {
                 echo "<li><a href=\"$selfurl?customerid=$l\">$l</a>";
                 if (`grep $l $fragilefile` != '')
                     echo " <sup class='helptip fragile'>fragile</sup> ";
-                if ((int)`grep -c $l $tmpfile` > 1)
+                if ((int)`grep -w $l $tmpfile | awk '{print \$7}'` > 1)
                     echo " <sup class='helptip multi'>multi</sup> ";
                 echo "</li>\n";
             }
