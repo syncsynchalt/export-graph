@@ -152,7 +152,7 @@ EOT;
             $tmpfile = "/tmp/exp-tmpfile-".getmypid().".txt";
             system('cat $(ls ~mdriscoll/spurge/arc_report_* | tail -n 1) | '
                 . ' sed -ne \'/All export requests/,/rows)/ p\' | '
-                . ' grep \' active \' | '
+                . ' egrep \' (active|stalled) \' | '
                 . ' grep M[SD]T > ' . $tmpfile);
 
             $f = popen("cat $tmpfile | awk '{print \$1}'", "r");
